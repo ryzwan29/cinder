@@ -144,6 +144,12 @@ class SynoISCSIDriver(driver.ISCSIDriver):
         return model_update
 
     def remove_export(self, context, volume):
+        _att = [a for a in (volume.volume_attachment or [])
+                if a.attach_status == 'attached']
+        if len(_att) > 1:
+            LOG.warning('Volume %s has %d active attachments, skip remove_export',
+                        volume['id'], len(_att))
+            return
         try:
             if not self.common.is_lun_mapped(volume['name']):
                 return
